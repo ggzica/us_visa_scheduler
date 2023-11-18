@@ -38,7 +38,6 @@ YOUR_EMBASSY = config["PERSONAL_INFO"]["YOUR_EMBASSY"]
 EMBASSY = Embassies[YOUR_EMBASSY][0]
 FACILITY_ID = Embassies[YOUR_EMBASSY][1]
 REGEX_CONTINUE = Embassies[YOUR_EMBASSY][2]
-PRIOD_START = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
 
 
 # Notification:
@@ -172,6 +171,8 @@ def start_process():
         )
     )
     print("\n\tlogin successful!\n")
+
+
 def get_currentAppDate():
     currentApp = driver.find_element(By.CLASS_NAME, "consular-appt").get_attribute(
         "textContent"
@@ -222,6 +223,7 @@ def get_date():
     session = driver.get_cookie("_yatri_session")["value"]
     script = JS_SCRIPT % (str(DATE_URL), session)
     content = driver.execute_script(script)
+    print(f'content : {content}')
     return json.loads(content)
 
 
@@ -272,82 +274,97 @@ def info_logger(file_path, log):
 service = Service()
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(service=service, options=options)
+send_notification("Script Restarted", "Script Restarted")
 
-
+i = 0
 if __name__ == "__main__":
-    first_loop = True
-    while 1:
-        LOG_FILE_NAME = "log_" + str(datetime.now().date()) + ".txt"
-        if first_loop:
-            t0 = time.time()
-            total_time = 0
-            Req_count = 0
-            start_process()
-            PRIOD_END = get_currentAppDate()
-            print(f"Period End : {PRIOD_END}")
-            first_loop = False
-        Req_count += 1
-        try:
-            msg = (
-                "-" * 60
-                + f"\nRequest count: {Req_count}, Log time: {datetime.today()}\n"
-            )
-            print(msg)
-            info_logger(LOG_FILE_NAME, msg)
-            dates = get_date()
-            if not dates:
-                # Ban Situation
-                msg = f"List is empty, Probabely banned!\n\tSleep for {BAN_COOLDOWN_TIME} hours!\n"
-                print(msg)
-                info_logger(LOG_FILE_NAME, msg)
-                send_notification("BAN", msg)
-                driver.get(SIGN_OUT_LINK)
-                time.sleep(BAN_COOLDOWN_TIME * hour)
-                first_loop = True
-            else:
-                # Print Available dates:
-                msg = ""
-                for d in dates:
-                    msg = msg + "%s" % (d.get("date")) + ", "
-                msg = "Available dates:\n" + msg
-                print(msg)
-                info_logger(LOG_FILE_NAME, msg)
-                date = get_available_date(dates)
-                if date:
-                    # A good date to schedule for
-                    send_notification("Date Found", date)
-                    END_MSG_TITLE, msg = reschedule(date)
-                    break
-                RETRY_WAIT_TIME = random.randint(RETRY_TIME_L_BOUND, RETRY_TIME_U_BOUND)
-                t1 = time.time()
-                total_time = t1 - t0
-                msg = "\nWorking Time:  ~ {:.2f} minutes".format(total_time / minute)
-                print(msg)
-                info_logger(LOG_FILE_NAME, msg)
-                if total_time > WORK_LIMIT_TIME * hour:
-                    # Let program rest a little
-                    send_notification(
-                        "REST",
-                        f"Break-time after {WORK_LIMIT_TIME} hours | Repeated {Req_count} times",
-                    )
-                    driver.get(SIGN_OUT_LINK)
-                    time.sleep(WORK_COOLDOWN_TIME * hour)
-                    first_loop = True
-                else:
-                    msg = "Retry Wait Time: " + str(RETRY_WAIT_TIME) + " seconds"
-                    print(msg)
-                    info_logger(LOG_FILE_NAME, msg)
-                    time.sleep(RETRY_WAIT_TIME)
-        except Exception as e:
-            # Exception Occured
-            print(e)
-            msg = f"Break the loop after exception!\n"
-            END_MSG_TITLE = "EXCEPTION"
-            break
+            first_loop = True
+            while 1:
+                    LOG_FILE_NAME = "log_" + str(datetime.now().date()) + ".txt"
+                    if first_loop:
+                        t0 = time.time()
+                        total_time = 0
+                        Req_count = 0
+                        start_process()
+                        PRIOD_START = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
+                        PRIOD_END = get_currentAppDate()
+                        i = 0
+                        print(f"Period End : {PRIOD_END}")
+                        first_loop = False
+                    Req_count += 1
+                    try:
+                        msg = (
+                            "-" * 60
+                            + f"\nRequest count: {Req_count}, Log time: {datetime.today()}\n"
+                        )
+                        print(msg)
+                        info_logger(LOG_FILE_NAME, msg)
+                        dates = get_date()
+                        if not dates:
+                            # Ban Situation
+                            msg = f"List is empty!\n\tSleep for {BAN_COOLDOWN_TIME} hours!\n"
+                            print(msg)
+                            info_logger(LOG_FILE_NAME, msg)
+                            driver.get(SIGN_OUT_LINK)
+                            time.sleep(BAN_COOLDOWN_TIME * hour)
+                            first_loop = True
+                        else:
+                            if i == 0:
+                                send_notification(
+                                    "Dates Fetched",
+                                    f"Dates Fetched, looking for a date between {PRIOD_START} & {PRIOD_END}",
+                                )
+                                i = i + 1
 
+                            # Print Available dates:
+                            msg = ""
+                            for d in dates:
+                                msg = msg + "%s" % (d.get("date")) + ", "
+                            msg = "Available dates:\n" + msg
+                            print(msg)
+                            info_logger(LOG_FILE_NAME, msg)
+                            date = get_available_date(dates)
+                            if date:
+                                # A good date to schedule for
+                                send_notification("Date Found", date)
+                                END_MSG_TITLE, msg = reschedule(date)
+                                break
+                            RETRY_WAIT_TIME = random.randint(
+                                RETRY_TIME_L_BOUND, RETRY_TIME_U_BOUND
+                            )
+                            t1 = time.time()
+                            total_time = t1 - t0
+                            msg = "\nWorking Time:  ~ {:.2f} minutes".format(
+                                total_time / minute
+                            )
+                            print(msg)
+                            info_logger(LOG_FILE_NAME, msg)
+                            if total_time > WORK_LIMIT_TIME * hour:
+                                # Let program rest a little
+                                send_notification(
+                                    "REST",
+                                    f"Break-time after {WORK_LIMIT_TIME} hours | Repeated {Req_count} times",
+                                )
+                                driver.get(SIGN_OUT_LINK)
+                                time.sleep(WORK_COOLDOWN_TIME * hour)
+                                first_loop = True
+                            else:
+                                msg = "Retry Wait Time: " + str(RETRY_WAIT_TIME) + " seconds"
+                                print(msg)
+                                info_logger(LOG_FILE_NAME, msg)
+                                time.sleep(RETRY_WAIT_TIME)
+                    except Exception as e:
+                        # Exception Occured
+                        print(e)
+                        msg = f"Break the loop after exception!\n"
+                        END_MSG_TITLE = "EXCEPTION"
+                        msg = e
+                        break
+                        
 print(msg)
 info_logger(LOG_FILE_NAME, msg)
 send_notification(END_MSG_TITLE, msg)
 driver.get(SIGN_OUT_LINK)
 driver.stop_client()
 driver.quit()
+        
