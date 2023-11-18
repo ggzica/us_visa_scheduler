@@ -9,18 +9,18 @@ The visa_rescheduler is a bot for US VISA (usvisa-info.com) appointment reschedu
 
 ## Attention
 - Right now, the script works for the following embassies:
-* Armenia - YEREVAN
-* Colombia - Bogotá
-* Canada - Calgary
-* Canada - Halifax
-* Canada - Montreal
-* Canada - Ottawa
-* Canada - Quebec City
-* Canada - Toronto
-* Canada - Vancouver
+    * Armenia - YEREVAN
+    * Colombia - Bogotá
+    * Canada - Calgary
+    * Canada - Halifax
+    * Canada - Montreal
+    * Canada - Ottawa
+    * Canada - Quebec City
+    * Canada - Toronto
+    * Canada - Vancouver
 - The start date and the end date in the script are computerized:
-* Start Date is Now + 2 Days (Now is when the script runs)
-* End Date is the current appointment date (Fetched from us_visa site) 
+    * Start Date is Now + 2 Days (Now is when the script runs)
+    * End Date is the current appointment date (Fetched from us_visa site) 
 
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
