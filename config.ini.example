@@ -5,9 +5,6 @@ PASSWORD = account_pass
 ; Find SCHEDULE_ID in re-schedule page link:
 ; https://ais.usvisa-info.com/en-am/niv/schedule/{SCHEDULE_ID}/appointment
 SCHEDULE_ID = 99999999
-; Target Period:
-PRIOD_START = 2023-03-20
-PRIOD_END = 2023-06-01
 ; Change "en-am-yer", based on your embassy Abbreviation in embassy.py list.
 YOUR_EMBASSY = en-am-yer
 
@@ -23,11 +20,7 @@ PUSHOVER_TOKEN =
 PUSHOVER_USER = 
 ; Get email notifications via https://sendgrid.com/ (optional)
 SENDGRID_API_KEY = 
-; Get push notifications via PERSONAL WEBSITE http://yoursite.com (Optional)
-PERSONAL_SITE_USER = *********
-PERSONAL_SITE_PASS = *********
-PUSH_TARGET_EMAIL = notifyemail@gmail.com
-PERSONAL_PUSHER_URL = https://yoursite.com/api/esender.php
+
 
 [TIME]
 ; Time between retries/checks for available dates (seconds)
